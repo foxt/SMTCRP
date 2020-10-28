@@ -1,13 +1,43 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Resources\tray.ico</ApplicationIcon>
+    <Authors>theLMGN</Authors>
+    <Company />
+    <Description>Rich presence for all SMTC apps, a.k.a. the ones that show up when you change the volume.</Description>
+    <Copyright>SMTCRP is licensed under the GNU GPL 3.0</Copyright>
+    <PackageLicenseExpression>see: https://github.com/theLMGN/SMTCRP/blob/main/LICENSE</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/theLMGN/SMTCRP</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/theLMGN/SMTCRP.git</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+    <PackageIcon>tray.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.0.150" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\tray.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\tray.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\trey.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
