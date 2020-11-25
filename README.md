@@ -31,6 +31,7 @@ Rich presence for all SMTC apps, a.k.a. the ones that show up when you change th
 
 3. There is no step 3.
 
+
 ## Note about browsers
 
 By default, this app will **IGNORE** any apps starting with `discord`, `firefox`, `chrom`, `msedge` or `opera`. You can disable this if you'd like, but their presences will likely never be supported.
