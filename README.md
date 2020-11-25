@@ -1,5 +1,18 @@
 # SMTC Rich Presence
+
+![The presence in action.](presence.png)
+
 Rich presence for all SMTC apps, a.k.a. the ones that show up when you change the volume.
+
+## Features
+
+- It shows what music you're listening to from any app
+
+- You can block certain apps as you please
+
+- It has a cool context menu I guess
+
+![It's very cool.](context.png)
 
 ## Tested with
 
