@@ -53,6 +53,7 @@ namespace SMTCRP
         public static ContextMenuStrip context = new ContextMenuStrip();
         public static GlobalSystemMediaTransportControlsSessionManager gsmtcsm = GlobalSystemMediaTransportControlsSessionManager.RequestAsync().GetAwaiter().GetResult();
         public static bool isDisplaying = false;
+        public static bool settingsUpdated = false;
         public static string lastData = "";
         public static System.Timers.Timer updTimer = new System.Timers.Timer(1000);
         public static System.Timers.Timer deferTimer = new System.Timers.Timer(14000);
@@ -145,6 +146,7 @@ namespace SMTCRP
             {
                 Console.WriteLine("Settings updated, Presence will update as soon as it's allowed");
                 isDisplaying = false;
+                settingsUpdated = true;
             };
 
             context.Items.Add(showalbumtitle);
@@ -260,6 +262,8 @@ namespace SMTCRP
                     }
                 }
 
+                //var browser_blocked = false;
+
                 if (session == null)
                 {
                     trayIcon.Icon = trey;
@@ -269,6 +273,7 @@ namespace SMTCRP
                         isDisplaying = false;
                         client.ClearPresence();
                         Console.WriteLine("No media app open, Defering update cycle for 14 seconds...");
+                        settingsUpdated = false;
                         updTimer.Stop();
                         deferTimer.Start();
 
@@ -287,142 +292,164 @@ namespace SMTCRP
                             session.SourceAppUserModelId.ToLower().StartsWith("msedge") ||
                             session.SourceAppUserModelId.ToLower().StartsWith("spotify"))
                         {
-                            Console.WriteLine("browser_blocker {0}", session.SourceAppUserModelId);
+                            //Console.WriteLine("browser_blocker {0}", session.SourceAppUserModelId);
                             if (session == null || i >= ses.Count)
                             {
                                 session = null;
                                 break;
                             }
                             session = ses[i];
+                            //browser_blocked = true;
                             i += 1;
                         }
                     }
                 }
 
-                var mediaProperties = session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
-                string appName = session.SourceAppUserModelId.Replace(".exe", "");
-                string appLogo = "generic";
-                if (icons.Contains(appName.ToLower()))
+                if (session != null)
                 {
-                    appLogo = appName.ToLower();
-                }
-                if (appName.ToLower().StartsWith("winamp") || appName.ToLower().StartsWith("wacup"))
-                {
-                    appLogo = "winamp";
-                    appName = "Winamp";
-                }
-                if (appName.EndsWith("ZuneMusic"))
-                {
-                    appLogo = "zunemusic";
-                    appName = "Groove Music";
-                }
-                if (appLogo == "generic")
-                {
-                    Console.WriteLine("Using generic app icon! Contact theLMGN#4444 to get an app icon for {0}", appName);
-                }
-                if (appName.Contains("!")) // attempt to clean UWP app names
-                {
-                    appName = appName.Split(".").Last();
-                }
-                var data = mediaProperties.Title + " by " + mediaProperties.Artist + " via " + appName;
-                if (blockapp.GetCurrentParent().InvokeRequired)
-                {
-                    blockapp.GetCurrentParent().Invoke(new Action(() =>
+                    var mediaProperties = session.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
+                    string appName = session.SourceAppUserModelId.Replace(".exe", "");
+                    string appLogo = "generic";
+                    if (icons.Contains(appName.ToLower()))
                     {
-                        blockapp.Text = "Block " + appName;
-                    }));
-                }
-                else
-                {
-                    blockapp.Text = "Block " + appName;
-                }
-
-                var pbi = session.GetPlaybackInfo();
-                if (pbi.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing && !isDisplaying)
-                {
-                    return;
-                }
-                if (pbi.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                {
-                    trayIcon.Icon = trey;
-                    trayIcon.Text = "SMTCRP - Nothing playing";
-                    client.ClearPresence();
-                    isDisplaying = false;
-                    Console.WriteLine("Playback is {0}, Defering update cycle for 14 seconds...", pbi.PlaybackStatus);
-                    updTimer.Stop();
-                    deferTimer.Start();
-                    return;
-                }
-                var tlp = session.GetTimelineProperties();
-
-                if (data == lastData && isDisplaying) { return; }
-                Console.WriteLine(data);
-
-                var count = mediaProperties.AlbumTrackCount;
-                var num = mediaProperties.TrackNumber;
-
-                if (count < num)
-                {
-                    count = num;
-                }
-
-                if (Properties.Settings.Default.blockedApps.Contains(session.SourceAppUserModelId.ToLower()))
-                {
-                    Console.WriteLine("user_blocker {0}", session.SourceAppUserModelId);
-                    trayIcon.Icon = troy;
-                    trayIcon.Text = "SMTCRP - " + appName + " is blocked";
-                    client.ClearPresence();
-                    isDisplaying = false;
-                    Console.WriteLine("Playback is {0}, Defering update cycle for 14 seconds...", pbi.PlaybackStatus);
-                    updTimer.Stop();
-                    deferTimer.Start();
-                }
-                else
-                {
-                    var generated_party = new Party()
-                    {
-                        ID = Guid.NewGuid().ToString(),
-                        Size = num,
-                        Max = count
-                    };
-
-                    if (!Properties.Settings.Default.useTrackNumbers)
-                    {
-                        generated_party = null;
+                        appLogo = appName.ToLower();
                     }
-
-                    var generated_details = "🎵 " + mediaProperties.Title;
-                    if (Properties.Settings.Default.useAlbumTitle)
+                    if (appName.ToLower().StartsWith("winamp") || appName.ToLower().StartsWith("wacup"))
                     {
-                        generated_details = "🎵 " + mediaProperties.AlbumTitle + " - " + mediaProperties.Title;
+                        appLogo = "winamp";
+                        appName = "Winamp";
                     }
-
-                    client.SetPresence(new RichPresence()
+                    if (appName.EndsWith("ZuneMusic"))
                     {
-                        Details = generated_details,
-                        State = "👥 " + mediaProperties.Artist,
-                        Party = generated_party,
-                        Assets = new Assets()
+                        appLogo = "zunemusic";
+                        appName = "Groove Music";
+                    }
+                    if (appName.Contains("!")) // attempt to clean UWP app names
+                    {
+                        appName = appName.Split(".").Last();
+                    }
+                    var data = mediaProperties.Title + " by " + mediaProperties.Artist + " via " + appName;
+                    if (blockapp.GetCurrentParent().InvokeRequired)
+                    {
+                        blockapp.GetCurrentParent().Invoke(new Action(() =>
                         {
-                            LargeImageKey = appLogo,
-                            LargeImageText = "via " + appName,
-                            SmallImageKey = "logo",
-                            SmallImageText = "https://github.com/thelmgn/smtcrp"
-                        },
-                    });
-                    isDisplaying = true;
-                    lastData = data;
-                    trayIcon.Icon = tray;
-                    if (data.Length > 54)
-                    {
-                        trayIcon.Text = "SMTCRP - " + data.Substring(0, 53) + "…";
+                            blockapp.Text = "Block " + appName;
+                        }));
                     }
                     else
                     {
-                        trayIcon.Text = "SMTCRP - " + data;
+                        blockapp.Text = "Block " + appName;
+                    }
+
+                    var pbi = session.GetPlaybackInfo();
+                    if (pbi.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing && !isDisplaying)
+                    {
+                        return;
+                    }
+                    if (pbi.PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                    {
+                        trayIcon.Icon = trey;
+                        trayIcon.Text = "SMTCRP - Nothing playing";
+                        client.ClearPresence();
+                        isDisplaying = false;
+                        Console.WriteLine("Playback is {0}, Defering update cycle for 14 seconds...", pbi.PlaybackStatus);
+                        settingsUpdated = false;
+                        updTimer.Stop();
+                        deferTimer.Start();
+                        return;
+                    }
+                    var tlp = session.GetTimelineProperties();
+
+                    if (data == lastData && isDisplaying) { return; }
+                    Console.WriteLine(data);
+
+                    var count = mediaProperties.AlbumTrackCount;
+                    var num = mediaProperties.TrackNumber;
+
+                    if (count < num)
+                    {
+                        count = num;
+                    }
+
+                    if (Properties.Settings.Default.blockedApps.Contains(session.SourceAppUserModelId.ToLower()))
+                    {
+                        //Console.WriteLine("user_blocker {0}", session.SourceAppUserModelId);
+                        trayIcon.Icon = troy;
+                        trayIcon.Text = "SMTCRP - " + appName + " is blocked";
+                        client.ClearPresence();
+                        isDisplaying = false;
+                        //Console.WriteLine("Playback is {0}, Defering update cycle for 14 seconds...", pbi.PlaybackStatus);
+                        //updTimer.Stop();
+                        //deferTimer.Start();
+                    }
+                    else
+                    {
+                        var generated_party = new Party()
+                        {
+                            ID = Guid.NewGuid().ToString(),
+                            Size = num,
+                            Max = count
+                        };
+
+                        if (!Properties.Settings.Default.useTrackNumbers)
+                        {
+                            generated_party = null;
+                        }
+
+                        var generated_details = "🎵 " + mediaProperties.Title;
+                        if (Properties.Settings.Default.useAlbumTitle)
+                        {
+                            generated_details = "🎵 " + mediaProperties.AlbumTitle + " - " + mediaProperties.Title;
+                        }
+
+                        if (appLogo == "generic")
+                        {
+                            Console.WriteLine("Using generic app icon! Contact theLMGN#4444 to get an app icon for {0}", appName);
+                        }
+
+                        client.SetPresence(new RichPresence()
+                        {
+                            Details = generated_details,
+                            State = "👥 " + mediaProperties.Artist,
+                            Party = generated_party,
+                            Assets = new Assets()
+                            {
+                                LargeImageKey = appLogo,
+                                LargeImageText = "via " + appName,
+                                SmallImageKey = "logo",
+                                SmallImageText = "https://github.com/thelmgn/smtcrp"
+                            },
+                        });
+                        isDisplaying = true;
+                        lastData = data;
+                        trayIcon.Icon = tray;
+                        if (data.Length > 54)
+                        {
+                            trayIcon.Text = "SMTCRP - " + data.Substring(0, 53) + "…";
+                        }
+                        else
+                        {
+                            trayIcon.Text = "SMTCRP - " + data;
+                        }
                     }
                 }
+                else
+                {
+                    trayIcon.Icon = trey;
+                    trayIcon.Text = "SMTCRP - Ignoring a browser";
+                    if (isDisplaying || settingsUpdated)
+                    {
+                        isDisplaying = false;
+                        client.ClearPresence();
+                        Console.WriteLine("Browser ignored, Defering update cycle for 14 seconds...");
+                        settingsUpdated = false;
+                        updTimer.Stop();
+                        deferTimer.Start();
+                    }
+                    return;
+                }
                 Console.WriteLine("Defering update cycle for 14 seconds...");
+                settingsUpdated = false;
                 updTimer.Stop();
                 deferTimer.Start();
             }
