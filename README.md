@@ -15,6 +15,7 @@ Rich presence for all SMTC apps, a.k.a. the ones that show up when you change th
 ![It's very cool.](context.png)
 
 ## Tested with
+(these are the apps that SMTCRP is proven to work with, and has special icons for. As long as your media shows up when you adjust your volume in that obnoxiously large volume thing (can you tell I daily a Mac?), it should work.)
 
 - [x] [Groove Music](https://www.microsoft.com/en-gb/p/groove-music/9wzdncrfj3pt)
 
