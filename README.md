@@ -22,6 +22,8 @@ Rich presence for all SMTC apps, a.k.a. the ones that show up when you change th
 
 - [x] [WACUP](https://getwacup.com/) (with `gen_win10shell.dll` plugin)
 
+- [x] [TIDAL](https://tidal.com/) 
+
 
 ## Setup
 
