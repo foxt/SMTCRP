@@ -47,7 +47,7 @@ namespace SMTCRP
             ShowWindow(handle, SW_HIDE);
         }
         #endregion
-        public static string[] icons = new string[] { "dopamine", "winamp", "zunemusic" };
+        public static string[] icons = new string[] { "dopamine", "winamp", "zunemusic", "tidal" };
         public static DiscordRpcClient client;
         public static NotifyIcon trayIcon = new NotifyIcon();
         public static ContextMenuStrip context = new ContextMenuStrip();
@@ -318,6 +318,11 @@ namespace SMTCRP
                     {
                         appLogo = "winamp";
                         appName = "Winamp";
+                    }
+                    if (appName.ToLower().StartsWith("tidal"))
+                    {
+                        appLogo = "tidal";
+                        appName = "TIDAL";
                     }
                     if (appName.EndsWith("ZuneMusic"))
                     {
